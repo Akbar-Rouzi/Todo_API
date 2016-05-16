@@ -7,7 +7,7 @@ var PORT = process.env.PORT || 3000;
 var todos =  [];
 var todoNextId = 1;
 
-app.use(bodyParser.json());// anytime json request comes in, express is gonna parse it and we are able to access it via req.body
+app.use(bodyParser.json());
 app.get('/', function(req, res) {
     res.send('Todo API Root');
 });
@@ -20,7 +20,7 @@ app.get('/todos', function (req, res) {
 //Get/todos/:id
 app.get('/todos/:id', function(req, res) {
     var todoId = parseInt(req.params.id, 10);
-    var matchedTodo = _.findWhere(todo, {id: todoId});
+    var matchedTodo = _.findWhere(todos, {id: todoId});
    
     if(matchedTodo) {
         res.json(matchedTodo);
@@ -30,18 +30,24 @@ app.get('/todos/:id', function(req, res) {
 });
 
 // POST/todos
-app.post('/todos', function (req, res) {//it alow us to set up API route that requires HTTP method 
-   var body = req.body;                 
+app.post('/todos', function (req, res) {
+    var body = _.pick(req.body,'description', 'completed'); 
+   
+    // validation for user's data.
+   if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
+        return res.status(400).send("bad request was sent! Pleas check your input!");
+    }
     
-    // add id field 
+    body.description = body.description.trim();
+   
     body.id = todoNextId;
     todoNextId++;
-    // push the body into array
+   
     todos.push(body);
     
-    res.json(body);// it allow us to pass the body to the user.
+    res.json(body);
 });
 
 app.listen(PORT, function() {
-    console.log("Express listenig on port" + PORT + '!');
+    console.log("Express listenig on port " + PORT + '!');
 });
