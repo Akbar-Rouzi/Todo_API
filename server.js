@@ -12,9 +12,10 @@ app.get('/', function(req, res) {
     res.send('Todo API Root');
 });
 
-// GET todos?completed=true
+// GET todos?completed=true&q=some string
 app.get('/todos', function (req, res) {
-    var queryParams = req.query;
+    var queryParams = req.query; // if the url is like this /todos?completed=false, req.query will
+                                  //respond {completed = 'false'}
     var filteredTodos = todos;
     
     if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
@@ -23,6 +24,11 @@ app.get('/todos', function (req, res) {
         filteredTodos = _.where(filteredTodos, {completed: false});
     }
     
+    if(queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
+        filteredTodos = _.filter(filteredTodos, function (todo) {
+            return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;// return true or false
+        })
+    }
     res.json(filteredTodos);
 });
 
